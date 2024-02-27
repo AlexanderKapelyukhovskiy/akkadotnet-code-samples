@@ -5,6 +5,7 @@ using Akka.Event;
 using Akka.Hosting;
 using Akka.Persistence.Query;
 using Akka.Persistence.Query.Sql;
+using Akka.Persistence.Reminders;
 using Akka.Streams;
 using Akka.Streams.Dsl;
 using Akka.Util;
@@ -31,14 +32,46 @@ public sealed class ProductIndexActor : ReceiveActor, IWithTimers
     
     private record RetryFetchAllProducts(FetchAllProductsImpl OriginalRequest, int Attempts);
 
-    public ProductIndexActor(IRequiredActor<ProductMarker> requiredActor)
+    private record TestReminder(string Message, DateTime CreationDate, DateTime ExpectedDate);
+
+    public static void SendReminder(string message, ActorPath receiver, IActorRef reminder)
+    {
+        var taskId = Guid.NewGuid().ToString();
+        var now = DateTime.UtcNow;
+        var when = DateTime.UtcNow.AddSeconds(120);
+
+        var data = new TestReminder(message, now, when);
+
+        var reminderMessage  = new Reminder.Schedule(taskId, receiver, data, when);
+        reminder.Tell(reminderMessage);
+    }
+
+    public ProductIndexActor(IRequiredActor<ProductMarker> requiredActor, IRequiredActor<Reminder> reminderActor)
     {
         _shardRegion = requiredActor.ActorRef;
+
+        _logging.Warning("ProductIndexActor executing");
+
+        var messageFromConst = "Reminder from  ProductIndexActor constructor";
+        SendReminder(messageFromConst, Self.Path, reminderActor.ActorRef);
+        _logging.Warning("{0} sent", messageFromConst);
+
         Receive<ProductFound>(found =>
         {
             _logging.Info("Found product [{0}]", found);
             _productIds = _productIds.Add(found.ProductId, ProductData.Empty);
             _shardRegion.Tell(new FetchProduct(found.ProductId));
+
+            var message = "Reminder from  Receive<ProductFound>";
+            SendReminder(message, Self.Path, reminderActor.ActorRef);
+            _logging.Warning("{0} sent", message);
+        });
+
+        Receive<TestReminder>(reminderMessage =>
+        {
+            var now = DateTime.UtcNow;
+            var difference = now - reminderMessage.ExpectedDate;
+            _logging.Info("Received TestReminder [{0}]. Difference: {1} ",reminderMessage.Message, difference);
         });
 
         Receive<FetchResult>(result =>
