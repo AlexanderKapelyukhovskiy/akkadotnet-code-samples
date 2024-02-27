@@ -34,17 +34,23 @@ public sealed class ProductIndexActor : ReceiveActor, IWithTimers
 
     private record TestReminder(string Message, DateTime CreationDate, DateTime ExpectedDate);
 
-    public static void SendReminder(string message, ActorPath receiver, IActorRef reminder)
+    public static void SendReminder(string message, ActorPath receiver, IActorRef reminder, ITimerScheduler timer)
     {
         var taskId = Guid.NewGuid().ToString();
         var now = DateTime.UtcNow;
-        var when = DateTime.UtcNow.AddSeconds(120);
 
+        var when = DateTime.UtcNow.AddSeconds(60);
         var data = new TestReminder(message, now, when);
-
         var reminderMessage  = new Reminder.Schedule(taskId, receiver, data, when);
         reminder.Tell(reminderMessage);
+
+        int seconds = 50;
+        var taskId1 = Guid.NewGuid().ToString();
+        var when1 = DateTime.UtcNow.AddSeconds(seconds);
+        var data1 = new TestReminder("StartSingleTimer " + message, now, when1);
+        timer.StartSingleTimer(taskId1, data1, TimeSpan.FromSeconds(seconds));
     }
+
 
     public ProductIndexActor(IRequiredActor<ProductMarker> requiredActor, IRequiredActor<Reminder> reminderActor)
     {
@@ -53,7 +59,7 @@ public sealed class ProductIndexActor : ReceiveActor, IWithTimers
         _logging.Warning("ProductIndexActor executing");
 
         var messageFromConst = "Reminder from  ProductIndexActor constructor";
-        SendReminder(messageFromConst, Self.Path, reminderActor.ActorRef);
+        SendReminder(messageFromConst, Self.Path, reminderActor.ActorRef, Timers);
         _logging.Warning("{0} sent", messageFromConst);
 
         Receive<ProductFound>(found =>
@@ -63,7 +69,7 @@ public sealed class ProductIndexActor : ReceiveActor, IWithTimers
             _shardRegion.Tell(new FetchProduct(found.ProductId));
 
             var message = "Reminder from  Receive<ProductFound>";
-            SendReminder(message, Self.Path, reminderActor.ActorRef);
+            SendReminder(message, Self.Path, reminderActor.ActorRef, Timers);
             _logging.Warning("{0} sent", message);
         });
 
