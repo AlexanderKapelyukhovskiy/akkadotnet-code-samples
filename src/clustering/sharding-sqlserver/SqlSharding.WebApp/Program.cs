@@ -12,12 +12,12 @@ builder.Configuration.AddEnvironmentVariables();
 var akkaSection = builder.Configuration.GetSection("Akka");
 
 // maps to environment variable Akka__ClusterIp
-var hostName = akkaSection.GetValue<string>("ClusterIp", "localhost");
+var hostName = akkaSection.GetValue<string>("ClusterIp", "web");
 
 // maps to environment variable Akka__ClusterPort
 var port = akkaSection.GetValue<int>("ClusterPort", 7918);
 
-var seeds = akkaSection.GetValue<string[]>("ClusterSeeds", new []{ "akka.tcp://SqlSharding@localhost:7918" })
+var seeds = akkaSection.GetValue<string[]>("ClusterSeeds", new []{ "akka.tcp://SqlSharding@web:7918" })
     .ToArray();
 
 // Add services to the container.

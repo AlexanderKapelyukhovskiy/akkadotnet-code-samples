@@ -1,7 +1,7 @@
 @echo off
 REM builds all docker images
 
-set version="0.1.0"
+set version="0.3.0"
 set hostImageName="sqlsharding.host"
 set webImageName="sqlsharding.web"
 

@@ -2,9 +2,10 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>$(NetRuntime)</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,9 +13,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Akka.Persistence.Reminders" Version="0.7.0" />
         <PackageReference Include="Akka.Persistence.SqlServer.Hosting" Version="1.5.13" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsVersion)" />
         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsVersion)" />
+        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
         <PackageReference Include="Petabridge.Cmd.Cluster" Version="$(PbmVersion)" />
         <PackageReference Include="Petabridge.Cmd.Cluster.Sharding" Version="$(PbmVersion)" />
         <PackageReference Include="Petabridge.Cmd.Host" Version="$(PbmVersion)" />

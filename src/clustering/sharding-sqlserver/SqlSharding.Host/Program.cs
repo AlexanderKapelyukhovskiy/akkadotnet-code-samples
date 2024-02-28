@@ -16,6 +16,7 @@ using SqlSharding.Shared.Events;
 using SqlSharding.Shared.Serialization;
 using SqlSharding.Shared.Sharding;
 using Akka.Persistence.SqlServer.Hosting;
+using Akka.Persistence.Reminders;
 
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
 var seedDb = Environment.GetEnvironmentVariable("SEED_DB")?.ToLowerInvariant() is "true" ||
@@ -34,13 +35,14 @@ var builder = new HostBuilder()
 
         var akkaSection = context.Configuration.GetSection("Akka");
 
+        string hostname = Environment.GetEnvironmentVariable("HOSTNAME");
         // maps to environment variable Akka__ClusterIp
-        var hostName = akkaSection.GetValue<string>("ClusterIp", "localhost");
+        var hostName = akkaSection.GetValue<string>("ClusterIp", hostname);
 
         // maps to environment variable Akka__ClusterPort
         var port = akkaSection.GetValue<int>("ClusterPort", 0);
 
-        var seeds = akkaSection.GetValue<string[]>("ClusterSeeds", new[] { "akka.tcp://SqlSharding@localhost:7918" })
+        var seeds = akkaSection.GetValue<string[]>("ClusterSeeds", new[] { "akka.tcp://SqlSharding@web:7918" })
             .ToArray();
 
         services.AddAkka("SqlSharding", (configurationBuilder, provider) =>
@@ -124,6 +126,13 @@ var builder = new HostBuilder()
                     {
                         Role = ProductActorProps.SingletonActorRole
                     })
+                .WithSingleton<Reminder>(
+                    singletonName: "reminder",
+                    propsFactory: (_, _, resolver) => resolver.Props<Reminder>(),
+                    options: new ClusterSingletonOptions
+                    {
+                        Role = ProductActorProps.SingletonActorRole
+                    })
                 .AddPetabridgeCmd(cmd =>
                 {
                     cmd.RegisterCommandPalette(ClusterShardingCommands.Instance);
@@ -131,6 +140,13 @@ var builder = new HostBuilder()
                 })
                 .AddStartup((system, registry) =>
                 {
+                    //var recipient = system.a
+                    //var reminder = system.ActorOf(Reminder.Props(), "reminder");
+
+                    //var taskId = Guid.NewGuid().ToString();
+                    //var task = new Reminder.ScheduleRepeatedly(taskId, recipient.Path, "message", DateTime.UtcNow.AddDays(1), TimeSpan.FromHours(1));
+
+
                     if (!seedDb) 
                         return;
                     

@@ -1,23 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30114.105
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34616.47
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSharding.Shared", "SqlSharding.Shared\SqlSharding.Shared.csproj", "{52F92E8D-0E25-41DB-88C7-DB537166E97D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSharding.Shared", "SqlSharding.Shared\SqlSharding.Shared.csproj", "{52F92E8D-0E25-41DB-88C7-DB537166E97D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSharding.Host", "SqlSharding.Host\SqlSharding.Host.csproj", "{A8FF833D-47A2-4A7B-97D8-FBE56C973181}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSharding.Host", "SqlSharding.Host\SqlSharding.Host.csproj", "{A8FF833D-47A2-4A7B-97D8-FBE56C973181}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSharding.WebApp", "SqlSharding.WebApp\SqlSharding.WebApp.csproj", "{2DE443CB-EEA0-4A69-9750-C55638778565}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSharding.WebApp", "SqlSharding.WebApp\SqlSharding.WebApp.csproj", "{2DE443CB-EEA0-4A69-9750-C55638778565}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSharding.Sql.Host", "SqlSharding.Sql.Host\SqlSharding.Sql.Host.csproj", "{915E613A-A6ED-4633-BC50-832A15CF4596}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSharding.Sql.Host", "SqlSharding.Sql.Host\SqlSharding.Sql.Host.csproj", "{915E613A-A6ED-4633-BC50-832A15CF4596}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{52F92E8D-0E25-41DB-88C7-DB537166E97D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -36,5 +33,8 @@ Global
 		{915E613A-A6ED-4633-BC50-832A15CF4596}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{915E613A-A6ED-4633-BC50-832A15CF4596}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{915E613A-A6ED-4633-BC50-832A15CF4596}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal

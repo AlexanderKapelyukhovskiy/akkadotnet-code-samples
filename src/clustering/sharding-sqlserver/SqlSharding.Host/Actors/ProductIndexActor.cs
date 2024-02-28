@@ -5,6 +5,7 @@ using Akka.Event;
 using Akka.Hosting;
 using Akka.Persistence.Query;
 using Akka.Persistence.Query.Sql;
+using Akka.Persistence.Reminders;
 using Akka.Streams;
 using Akka.Streams.Dsl;
 using Akka.Util;
@@ -31,14 +32,60 @@ public sealed class ProductIndexActor : ReceiveActor, IWithTimers
     
     private record RetryFetchAllProducts(FetchAllProductsImpl OriginalRequest, int Attempts);
 
-    public ProductIndexActor(IRequiredActor<ProductMarker> requiredActor)
+    private record TestReminder(string Message, DateTime CreationDate, DateTime ExpectedDate);
+
+    public static void SendReminder(string message, ActorPath receiver, IActorRef reminder, ITimerScheduler timer,
+        IUntypedActorContext context)
+    {
+        var taskId = Guid.NewGuid().ToString();
+        var now = DateTime.UtcNow;
+
+        var when = DateTime.UtcNow.AddSeconds(60);
+        var data = new TestReminder(message, now, when);
+        var reminderMessage  = new Reminder.Schedule(taskId, receiver, data, when);
+        reminder.Tell(reminderMessage);
+
+        int seconds = 50;
+        var taskId1 = Guid.NewGuid().ToString();
+        var when1 = DateTime.UtcNow.AddSeconds(seconds);
+        var data1 = new TestReminder("StartSingleTimer " + message, now, when1);
+        timer.StartSingleTimer(taskId1, data1, TimeSpan.FromSeconds(seconds));
+
+        var timerId = Guid.NewGuid().ToString();
+        var persistentTimer = context.ActorOf(PersistentTimer.GetProps(timerId), $"timer-{timerId}");
+        persistentTimer.Tell(new StartTimerCommand(DateTime.UtcNow.AddSeconds(45)));
+    }
+
+
+    public ProductIndexActor(IRequiredActor<ProductMarker> requiredActor, IRequiredActor<Reminder> reminderActor)
     {
         _shardRegion = requiredActor.ActorRef;
+        var timerId = Guid.NewGuid().ToString();
+        var timer = Context.ActorOf(PersistentTimer.GetProps(timerId), $"timer-{timerId}");
+        timer.Tell(new StartTimerCommand(DateTime.UtcNow.AddSeconds(55)));
+
+        _logging.Warning("ProductIndexActor executing");
+
+        var messageFromConst = "Reminder from  ProductIndexActor constructor";
+        SendReminder(messageFromConst, Self.Path, reminderActor.ActorRef, Timers, Context);
+        _logging.Warning("{0} sent", messageFromConst);
+
         Receive<ProductFound>(found =>
         {
             _logging.Info("Found product [{0}]", found);
             _productIds = _productIds.Add(found.ProductId, ProductData.Empty);
             _shardRegion.Tell(new FetchProduct(found.ProductId));
+
+            var message = "Reminder from  Receive<ProductFound>";
+            SendReminder(message, Self.Path, reminderActor.ActorRef, Timers, Context);
+            _logging.Warning("{0} sent", message);
+        });
+
+        Receive<TestReminder>(reminderMessage =>
+        {
+            var now = DateTime.UtcNow;
+            var difference = now - reminderMessage.ExpectedDate;
+            _logging.Info("Received TestReminder [{0}]. Difference: {1} ",reminderMessage.Message, difference);
         });
 
         Receive<FetchResult>(result =>

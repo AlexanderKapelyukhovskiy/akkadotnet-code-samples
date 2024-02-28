@@ -12,7 +12,7 @@ if "%~1"=="" (
 	echo Running [%imageName%] with tag [%~1]
 )
 
-docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -p 1533:1433 --name "sqlsharding-sql" -d "%imageName%:%version%"
+docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -p 1433:1433 --name "sqlsharding-sql" -d "%imageName%:%version%"
 
 if errorlevel 1 (
 	echo "failed to start akkadotnet.sqlserver - building image first then retrying"
@@ -21,6 +21,6 @@ if errorlevel 1 (
 		echo "failed to build akkadotnet.sqlserver - aborting"
 		exit -1
 	) else (
-		docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -p 1533:1433 --name "sqlsharding-sql" -d "%imageName%:%version%"
+		docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -p 1433:1433 --name "sqlsharding-sql" -d "%imageName%:%version%"
 	)
 )
